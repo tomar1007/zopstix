@@ -1,0 +1,35 @@
+--- #3test
+- name: Ansible Create user functionlity module demo
+  hosts: all
+  user: ansible
+  become: yes
+  connection: ssh
+  vars:
+    USER: "monkey"
+
+  tasks:
+  - name: Gather available local users
+    ansible.builtin.user:
+      name: total
+      comment: harryadd
+      group: ansible
+      createhome: yes
+      home: /home/ansible/temp
+      state: present
+
+
+  - name: Gather available local users
+    getent:
+      database: passwd
+
+  - name: Show gathered local user names only
+    debug:
+      msg: "{{ item }}"
+    loop: "{{ getent_passwd.keys() | list }}"
+    when: ansible_check_mode
+  - name: Check if local user account '{{ USER }}' exists
+    assert:
+      that:
+        - USER in getent_passwd.keys()
+      fail_msg: "Given user not exists!"
+      success_msg: "Given user exists."
